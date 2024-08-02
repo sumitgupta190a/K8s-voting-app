@@ -22,7 +22,7 @@ jobs:
           echo "changed_files=$(git diff-tree --no-commit-id --name-only -r $GITHUB_SHA)" >> $GITHUB_ENV
 
       - name: Send alert
-        env:
+        env:  
           COMMIT_MSG: ${{ env.commit_msg }}
           COMMITTER_NAME: ${{ env.committer_name }}
           BRANCH_NAME: ${{ env.branch_name }}
