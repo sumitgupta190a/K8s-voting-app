@@ -1,0 +1,33 @@
+name: Commit Alert
+
+on: 
+  push:
+    branches:
+      - '**'  # Triggers on any branch push
+
+jobs:
+  alert:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Get commit details
+        id: commit_info
+        run: |
+          echo "commit_msg=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
+          echo "committer_name=$(git log -1 --pretty=%cn)" >> $GITHUB_ENV
+          echo "branch_name=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+          echo "changed_files=$(git diff-tree --no-commit-id --name-only -r $GITHUB_SHA)" >> $GITHUB_ENV
+
+      - name: Send alert
+        env:
+          COMMIT_MSG: ${{ env.commit_msg }}
+          COMMITTER_NAME: ${{ env.committer_name }}
+          BRANCH_NAME: ${{ env.branch_name }}
+          CHANGED_FILES: ${{ env.changed_files }}
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data "{
+            'text':'Commit Alert: \nCommitter: $COMMITTER_NAME \nCommit Message: $COMMIT_MSG \nBranch: $BRANCH_NAME \nChanged Files: $CHANGED_FILES'
+          }" https://flow.sokt.io/func/scriJhbYKJwe
