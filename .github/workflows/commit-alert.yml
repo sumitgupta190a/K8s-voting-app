@@ -16,10 +16,15 @@ jobs:
       - name: Get commit details
         id: commit_info
         run: |
-          echo "commit_msg=$(git log -1 --pretty=%B | jq -sRr @json)" >> $GITHUB_ENV
-          echo "committer_name=$(git log -1 --pretty=%cn | jq -sRr @json)" >> $GITHUB_ENV
-          echo "branch_name=$(echo ${GITHUB_REF#refs/heads/} | jq -sRr @json)" >> $GITHUB_ENV
-          echo "changed_files=$(git diff-tree --no-commit-id --name-only -r $GITHUB_SHA | paste -sd ', ' - | jq -sRr @json)" >> $GITHUB_ENV
+          commit_msg=$(git log -1 --pretty=%B | jq -Rs .)
+          committer_name=$(git log -1 --pretty=%cn | jq -Rs .)
+          branch_name=$(echo ${GITHUB_REF#refs/heads/} | jq -Rs .)
+          changed_files=$(git diff-tree --no-commit-id --name-only -r $GITHUB_SHA | jq -Rs .)
+          
+          echo "commit_msg=${commit_msg}" >> $GITHUB_ENV
+          echo "committer_name=${committer_name}" >> $GITHUB_ENV
+          echo "branch_name=${branch_name}" >> $GITHUB_ENV
+          echo "changed_files=${changed_files}" >> $GITHUB_ENV
 
       - name: Send alert
         env:  
