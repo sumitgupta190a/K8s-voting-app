@@ -31,3 +31,4 @@ jobs:
           curl -X POST -H 'Content-type: application/json' --data "{
             'text':'Commit Alert: \nCommitter: $COMMITTER_NAME \nCommit Message: $COMMIT_MSG \nBranch: $BRANCH_NAME \nChanged Files: $CHANGED_FILES'
           }" https://flow.sokt.io/func/scriJhbYKJwe  
+ 
