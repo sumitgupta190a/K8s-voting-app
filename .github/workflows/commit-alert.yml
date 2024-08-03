@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # Full clone
 
       - name: Get commit details
         id: commit_info
@@ -20,25 +22,23 @@ jobs:
           committer_name=$(git log -1 --pretty=%cn)
           branch_name=${GITHUB_REF#refs/heads/}
           commit_sha=$GITHUB_SHA
-          
-          echo "Commit SHA: ${commit_sha}"  # Debug SHA
-          
-          # Get the parent commit SHA (to compare if needed)
-          parent_sha=$(git rev-parse "${commit_sha}^")
-          echo "Parent Commit SHA: ${parent_sha}"  # Debug Parent SHA
 
-          # Debugging commands
+          echo "Commit SHA: ${commit_sha}"
+
+          if git rev-parse "${commit_sha}^" >/dev/null 2>&1; then
+              parent_sha=$(git rev-parse "${commit_sha}^")
+              echo "Parent Commit SHA: ${parent_sha}"
+              changed_files=$(git diff-tree --no-commit-id --name-only -r ${commit_sha} | paste -sd ', ' -)
+          else
+              echo "This commit is the initial commit and has no parent."
+              changed_files=$(git diff-tree --no-commit-id --name-only -r ${commit_sha} | paste -sd ', ' -)
+          fi
+
           echo "Commit Message: ${commit_msg}"
           echo "Committer Name: ${committer_name}"
           echo "Branch Name: ${branch_name}"
-          
-          # Check if the diff-tree command is correct
-          echo "Changed files:"
-          git diff-tree --no-commit-id --name-only -r ${commit_sha}
-
-          changed_files=$(git diff-tree --no-commit-id --name-only -r ${commit_sha} | paste -sd ', ' -)
           echo "Changed Files: ${changed_files}"
-          
+
           echo "commit_msg=${commit_msg}" >> $GITHUB_ENV
           echo "committer_name=${committer_name}" >> $GITHUB_ENV
           echo "branch_name=${branch_name}" >> $GITHUB_ENV
@@ -51,11 +51,6 @@ jobs:
           BRANCH_NAME: ${{ env.branch_name }}
           CHANGED_FILES: ${{ env.changed_files }}
         run: |
-          echo "Commit Message: $COMMIT_MSG"
-          echo "Committer Name: $COMMITTER_NAME"
-          echo "Branch Name: $BRANCH_NAME"
-          echo "Changed Files: $CHANGED_FILES"
-
           curl --location 'https://flow.sokt.io/func/scriJhbYKJwe' \
           --header 'Content-type: application/json' \
           --data "{\"text\": \"**New Commit**:\n**Committer**: $COMMITTER_NAME\n**Commit Message**: $COMMIT_MSG\n**Branch**: $BRANCH_NAME\n**Changed Files**: $CHANGED_FILES\"}"
