@@ -31,3 +31,4 @@ jobs:
           curl --location 'https://flow.sokt.io/func/scriJhbYKJwe' \
           --header 'Content-type: application/json' \
           --data "{\"text\": \"New Commit on the k8-files:\n\nCommitter: $COMMITTER_NAME\nCommit Message: $COMMIT_MSG\nBranch: $BRANCH_NAME\nChanged Files: $CHANGED_FILES\"}"
+ 
