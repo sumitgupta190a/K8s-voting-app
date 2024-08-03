@@ -16,11 +16,23 @@ jobs:
       - name: Get commit details
         id: commit_info
         run: |
-          echo "commit_msg=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
-          echo "committer_name=$(git log -1 --pretty=%cn)" >> $GITHUB_ENV
-          echo "branch_name=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+          commit_msg=$(git log -1 --pretty=%B)
+          committer_name=$(git log -1 --pretty=%cn)
+          branch_name=${GITHUB_REF#refs/heads/}
           changed_files=$(git diff-tree --no-commit-id --name-only -r $GITHUB_SHA | paste -sd ', ' -)
-          echo "changed_files=$changed_files" >> $GITHUB_ENV
+
+          echo "commit_msg=${commit_msg}"
+          echo "committer_name=${committer_name}"
+          echo "branch_name=${branch_name}"
+          echo "changed_files=${changed_files}"
+
+          # Debugging command: check if the git diff-tree command produces output
+          git diff-tree --no-commit-id --name-only -r $GITHUB_SHA
+
+          echo "commit_msg=${commit_msg}" >> $GITHUB_ENV
+          echo "committer_name=${committer_name}" >> $GITHUB_ENV
+          echo "branch_name=${branch_name}" >> $GITHUB_ENV
+          echo "changed_files=${changed_files}" >> $GITHUB_ENV
 
       - name: Send alert
         env:  
@@ -29,6 +41,11 @@ jobs:
           BRANCH_NAME: ${{ env.branch_name }}
           CHANGED_FILES: ${{ env.changed_files }}
         run: |
+          echo "Commit Message: $COMMIT_MSG"
+          echo "Committer Name: $COMMITTER_NAME"
+          echo "Branch Name: $BRANCH_NAME"
+          echo "Changed Files: $CHANGED_FILES"
+
           curl --location 'https://flow.sokt.io/func/scriJhbYKJwe' \
           --header 'Content-type: application/json' \
           --data "{\"text\": \"**New Commit**:\n**Committer**: $COMMITTER_NAME\n**Commit Message**: $COMMIT_MSG\n**Branch**: $BRANCH_NAME\n**Changed Files**: $CHANGED_FILES\"}"
