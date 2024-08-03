@@ -23,16 +23,22 @@ jobs:
           
           echo "Commit SHA: ${commit_sha}"  # Debug SHA
           
-          changed_files=$(git diff-tree --no-commit-id --name-only -r ${commit_sha} | paste -sd ', ' -)
+          # Get the parent commit SHA (to compare if needed)
+          parent_sha=$(git rev-parse "${commit_sha}^")
+          echo "Parent Commit SHA: ${parent_sha}"  # Debug Parent SHA
 
-          echo "commit_msg=${commit_msg}"
-          echo "committer_name=${committer_name}"
-          echo "branch_name=${branch_name}"
-          echo "changed_files=${changed_files}"
-
-          # Debugging command: check if the git diff-tree command produces output
+          # Debugging commands
+          echo "Commit Message: ${commit_msg}"
+          echo "Committer Name: ${committer_name}"
+          echo "Branch Name: ${branch_name}"
+          
+          # Check if the diff-tree command is correct
+          echo "Changed files:"
           git diff-tree --no-commit-id --name-only -r ${commit_sha}
 
+          changed_files=$(git diff-tree --no-commit-id --name-only -r ${commit_sha} | paste -sd ', ' -)
+          echo "Changed Files: ${changed_files}"
+          
           echo "commit_msg=${commit_msg}" >> $GITHUB_ENV
           echo "committer_name=${committer_name}" >> $GITHUB_ENV
           echo "branch_name=${branch_name}" >> $GITHUB_ENV
