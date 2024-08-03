@@ -13,17 +13,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Debug Git Info
+        run: |
+          git --version
+          git log -1 --pretty=format:"%H %B"
+          git diff-tree --no-commit-id --name-only -r $GITHUB_SHA || echo "Error fetching changed files"
+
       - name: Get commit details
         id: commit_info
         run: |
-          # Get commit message
           echo "commit_msg=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
-          # Get committer name
           echo "committer_name=$(git log -1 --pretty=%cn)" >> $GITHUB_ENV
-          # Get branch name
           echo "branch_name=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
-          # Get changed files
-          echo "changed_files=$(git diff-tree --no-commit-id --name-only -r $GITHUB_SHA | paste -sd ', ' -)" >> $GITHUB_ENV
+          echo "changed_files=$(git diff --name-only HEAD^ HEAD | paste -sd ', ' -)" >> $GITHUB_ENV
 
       - name: Debug Commit Details
         run: |
